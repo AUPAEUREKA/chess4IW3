@@ -3,7 +3,7 @@ import jwt_decode from 'jwt-decode'
 
 class Profile extends Component {
   constructor() {
-    super()
+    super();
     this.state = {
       pseudo: '',
       errors: {}
