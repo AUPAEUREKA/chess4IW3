@@ -19,6 +19,10 @@ export const login = user => {
     })
     .then(response => {
       localStorage.setItem('usertoken', response.data)
+      if(response.data.error != null){
+        localStorage.removeItem('usertoken')
+        this.props.history.push(`/`)
+      }
       return response.data
     })
     .catch(err => {
