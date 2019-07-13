@@ -1,14 +1,41 @@
 import React, { Component } from 'react'
 import { Link, withRouter } from 'react-router-dom'
+import socketIOClient from "socket.io-client";
 
 class Landing extends Component {
+
+    constructor() {
+        super();
+        this.state = {
+            endpoint: "localhost:4200",
+            userCount: 0
+        };
+        this.onChangeUserCount = this.onChangeUserCount.bind(this)
+        this.onChangeUserCount();
+
+    }
+
   logOut(e) {
     e.preventDefault()
     localStorage.removeItem('usertoken')
     this.props.history.push(`/`)
   }
 
+
+    onChangeUserCount() {
+        const socket = socketIOClient(this.state.endpoint);
+        socket.on('userCount',  (data) => {
+            this.setState({
+                userCount: data.userCount
+            })
+        });
+    }
+
   render() {
+      const playerCountStyle = {
+          float: 'right',
+          color: 'rgba(255,255,255,.5)'
+      };
     const loginRegLink = (
       <ul className="navbar-nav">
         <li className="nav-item">
@@ -65,6 +92,9 @@ class Landing extends Component {
             </li>
           </ul>
           {localStorage.usertoken ? userLink : loginRegLink}
+        </div>
+        <div style={playerCountStyle}>
+            Player { this.state.userCount }
         </div>
       </nav>
     )
