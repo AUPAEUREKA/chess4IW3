@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import jwt_decode from 'jwt-decode'
+import WithMoveValidation from "./HumanVsHuman";
 
 class Profile extends Component {
   constructor() {
@@ -31,8 +32,14 @@ class Profile extends Component {
                 <td>Pseudo</td>
                 <td>{this.state.pseudo}</td>
               </tr>
+            <tr>
+
+            </tr>
             </tbody>
           </table>
+            <div style={boardsContainer}>
+                <WithMoveValidation />
+            </div>
         </div>
       </div>
     )
@@ -40,3 +47,13 @@ class Profile extends Component {
 }
 
 export default Profile
+
+const boardsContainer = {
+    display: "block",
+    justifyContent: "space-around",
+    alignItems: "center",
+    flexWrap: "wrap",
+    width: "100%",
+    marginTop: 30,
+    marginBottom: 50
+};

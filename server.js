@@ -45,4 +45,7 @@ io.on('connection', function (socket) {
         io.emit('userCount', { userCount: userCount });
     });
 
+    socket.on('pieceMoved', function (fen) {
+        io.emit('pieceMoved', fen);
+    });
 });
