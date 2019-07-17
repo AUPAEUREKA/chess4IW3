@@ -26,12 +26,34 @@ class HumanVsHuman extends Component {
         square: "",
         // array of past game moves
         history: [],
-        endpoint: "localhost:4200",
+        game_over: false,
+        game:'',
+        socket: socketIOClient("localhost:4200")
 
     };
 
     componentDidMount() {
         this.game = new Chess();
+        this.setState(() => ({
+            game: window.location.pathname.split('/')[2]
+        }));
+        this.state.socket.emit('joinRoom','room-' + window.location.pathname.split('/')[2]);
+
+        this.state.socket.on('pieceMoved',  (data) => {
+            this.setState({
+                fen: data.fen,
+                history: data.history,
+                pieceSquare: "",
+                game_over: data.game_over
+            });
+
+            this.game.move({
+                from: data.from,
+                to: data.to,
+                promotion: "q" // always promote to a queen for example simplicity
+            });
+
+        });
     }
 
     // keep clicked square style and remove hint squares
@@ -83,7 +105,6 @@ class HumanVsHuman extends Component {
             history: this.game.history({ verbose: true }),
             squareStyles: squareStyling({ pieceSquare, history })
         }));
-        console.log(this.state.history);
 
     };
 
@@ -138,31 +159,18 @@ class HumanVsHuman extends Component {
             pieceSquare: ""
         });
 
-        const socket = socketIOClient(this.state.endpoint);
-        socket.emit('pieceMoved', {
+        this.state.socket.emit('pieceMoved', {
             from: this.state.pieceSquare,
             to: square,
+            gameId: this.state.game,
             fen: this.game.fen(),
             history: this.game.history({ verbose: true }),
-
+            game_over: this.game.game_over(),
         });
     };
 
     onOppenentMovedPiece() {
-        const socket = socketIOClient(this.state.endpoint);
-        socket.on('pieceMoved',  (data) => {
-            this.setState({
-                fen: data.fen,
-                history: data.history,
-                pieceSquare: ""
-            });
-            this.game.move({
-                from: data.from,
-                to: data.to,
-                promotion: "q" // always promote to a queen for example simplicity
-            });
 
-        });
     }
 
     onSquareRightClick = square =>
@@ -172,7 +180,6 @@ class HumanVsHuman extends Component {
 
     render() {
         const { fen, dropSquareStyle, squareStyles } = this.state;
-
         return this.props.children({
             squareStyles,
             position: fen,

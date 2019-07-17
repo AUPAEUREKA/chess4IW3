@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import jwt_decode from 'jwt-decode'
-import WithMoveValidation from "./HumanVsHuman";
+import Room from "./Room";
 
 class Profile extends Component {
   constructor() {
@@ -12,8 +12,8 @@ class Profile extends Component {
   }
 
   componentDidMount() {
-    const token = localStorage.usertoken
-    const decoded = jwt_decode(token)
+    const token = localStorage.usertoken;
+    const decoded = jwt_decode(token);
     this.setState({
       pseudo: decoded.pseudo
     })
@@ -37,9 +37,8 @@ class Profile extends Component {
             </tr>
             </tbody>
           </table>
-            <div style={boardsContainer}>
-                <WithMoveValidation />
-            </div>
+
+            <Room/>
         </div>
       </div>
     )

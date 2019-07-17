@@ -36,16 +36,48 @@ app.listen(port, function() {
 
 server.listen(4200);
 let userCount = 0;
-
+let room = 0;
+let rooms = [];
 io.on('connection', function (socket) {
     userCount++;
+
+    socket.on('createGame', function(data){
+        const roomName = 'room-' + ++room;
+        rooms.push(roomName);
+
+        socket.join(roomName);
+        io.emit('newGame', {name: data.name, room: roomName, rooms: rooms});
+
+    });
+    socket.on('getRooms', function(){
+        socket.emit('getRooms', rooms);
+    });
+
+    socket.on('joinGame', function(data){
+
+        for (let i = 0; i < rooms.length; i++) {
+            if ( rooms[i] === data.room) {
+                rooms.splice(i, 1);
+            }
+        }
+        io.emit('getRooms', rooms);
+        socket.join(data.room);
+
+        io.in(data.room).emit('launchGame', data.room);
+
+    });
+
     io.emit('userCount', { userCount: userCount });
     socket.on('disconnect', function () {
         userCount--;
         io.emit('userCount', { userCount: userCount });
     });
 
+    socket.on('joinRoom', function (gameName) {
+        socket.join(gameName);
+    });
+
     socket.on('pieceMoved', function (fen) {
-        io.emit('pieceMoved', fen);
+        io.in('room-' + fen.gameId).emit('pieceMoved', fen);
     });
 });
