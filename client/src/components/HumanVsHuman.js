@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import Chessboard from "chessboardjsx";
 import socketIOClient from "socket.io-client";
+import { createGame, updateGame } from './GameFunctions'
+import jwt_decode from "jwt-decode";
 
 const Chess = require('chess.js');
 
@@ -11,10 +13,11 @@ class HumanVsHuman extends Component {
 
     constructor() {
         super();
-        this.onOppenentMovedPiece = this.onOppenentMovedPiece.bind(this)
-        this.onOppenentMovedPiece();
+        this.socketOnPiecedMoved = this.socketOnPiecedMoved.bind(this)
+        this.socketOnPiecedMoved();
     }
     state = {
+        user: {},
         fen: "start",
         // square styles for active drop square
         dropSquareStyle: {},
@@ -28,31 +31,68 @@ class HumanVsHuman extends Component {
         history: [],
         game_over: false,
         game:'',
-        socket: socketIOClient("localhost:4200")
-
+        gameIdMongo:'',
+        socket: socketIOClient("localhost:4200"),
+        myTurn: true
     };
 
     componentDidMount() {
         this.game = new Chess();
+
+        const token = localStorage.usertoken;
+        const decoded = jwt_decode(token);
+        this.setState({
+            user: decoded
+        });
+
         this.setState(() => ({
             game: window.location.pathname.split('/')[2]
         }));
         this.state.socket.emit('joinRoom','room-' + window.location.pathname.split('/')[2]);
 
-        this.state.socket.on('pieceMoved',  (data) => {
+    }
+
+    socketOnPiecedMoved() {
+        this.state.socket.on('pieceMovedEmit',  (data) => {
+
+            if (this.state.gameIdMongo === '' && data.gameIdMongo === '') {
+                const gameData = {
+                    user_1_id: this.state.user._id
+                };
+
+                createGame(gameData).then(res => {
+                    this.setState({
+                        gameIdMongo: res.data._id
+                    });
+                });
+            } else if (this.state.gameIdMongo === '') {
+                const gameData = {
+                    id: data.gameIdMongo,
+                    gameDataUpdate : {
+                        $set: { user_2_id: this.state.user._id, }
+                    }
+                };
+                updateGame(gameData).then(res => {
+                    console.log('second user added')
+                });
+            }
+
             this.setState({
                 fen: data.fen,
                 history: data.history,
+                gameIdMongo: data.gameIdMongo,
                 pieceSquare: "",
-                game_over: data.game_over
+                game_over: data.game_over,
+                myTurn: true
             });
 
             this.game.move({
                 from: data.from,
                 to: data.to,
-                promotion: "q" // always promote to a queen for example simplicity
+                promotion: "q"
             });
 
+            this.updateHistoryIfCheckmate();
         });
     }
 
@@ -62,6 +102,20 @@ class HumanVsHuman extends Component {
             squareStyles: squareStyling({ pieceSquare, history })
         }));
     };
+
+    updateHistoryIfCheckmate() {
+        if (this.game.in_checkmate()) {
+            const gameData = {
+                id: this.state.gameIdMongo,
+                gameDataUpdate : {
+                    $set: { finished: true, loser: this.state.user._id }
+                }
+            };
+            updateGame(gameData).then(res => {
+                console.log('You are checkmate')
+            });
+        }
+    }
 
     // show possible moves
     highlightSquare = (sourceSquare, squaresToHighlight) => {
@@ -139,6 +193,9 @@ class HumanVsHuman extends Component {
     };
 
     onSquareClick = square => {
+
+        if (!this.state.myTurn) return;
+
         this.setState(({ history }) => ({
             squareStyles: squareStyling({ pieceSquare: square, history }),
             pieceSquare: square
@@ -156,22 +213,20 @@ class HumanVsHuman extends Component {
         this.setState({
             fen: this.game.fen(),
             history: this.game.history({ verbose: true }),
-            pieceSquare: ""
+            pieceSquare: "",
+            myTurn: false
         });
 
         this.state.socket.emit('pieceMoved', {
             from: this.state.pieceSquare,
             to: square,
             gameId: this.state.game,
+            gameIdMongo: this.state.gameIdMongo,
             fen: this.game.fen(),
             history: this.game.history({ verbose: true }),
             game_over: this.game.game_over(),
         });
     };
-
-    onOppenentMovedPiece() {
-
-    }
 
     onSquareRightClick = square =>
         this.setState({

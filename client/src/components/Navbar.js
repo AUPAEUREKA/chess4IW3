@@ -58,8 +58,13 @@ class Landing extends Component {
             Room
           </Link>
         </li>
+          <li className="nav-item">
+          <Link to="/history" className="nav-link">
+            Game historic
+          </Link>
+        </li>
         <li className="nav-item">
-          <a href="" onClick={this.logOut.bind(this)} className="nav-link">
+          <a href="/" onClick={this.logOut.bind(this)} className="nav-link">
             Logout
           </a>
         </li>

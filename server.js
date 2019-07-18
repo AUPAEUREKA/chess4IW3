@@ -27,8 +27,10 @@ mongoose
   .catch(err => console.log(err));
 
 const Users = require('./routes/Users');
+const Games = require('./routes/Games');
 
 app.use('/users', Users);
+app.use('/games', Games);
 
 app.listen(port, function() {
   console.log('Server is running on port: ' + port)
@@ -78,6 +80,6 @@ io.on('connection', function (socket) {
     });
 
     socket.on('pieceMoved', function (fen) {
-        io.in('room-' + fen.gameId).emit('pieceMoved', fen);
+        socket.to('room-' + fen.gameId).emit('pieceMovedEmit', fen);
     });
 });

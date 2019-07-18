@@ -6,6 +6,7 @@ import Landing from './components/Landing'
 import Login from './components/Login'
 import Register from './components/Register'
 import Room from './components/Room'
+import History from "./components/History";
 import WithMoveValidation from "./components/HumanVsHuman";
 
 
@@ -20,6 +21,7 @@ class App extends Component {
                         <Route exact path="/register" component={Register} />
                         <Route exact path="/login" component={Login} />
                         <Route exact path="/room" component={Room} />
+                        <Route exact path="/history" component={History} />
                         <Route exact path="/game/:id" component={WithMoveValidation} />
                     </div>
                 </div>

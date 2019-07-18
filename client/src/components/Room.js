@@ -63,11 +63,11 @@ class Room extends Component {
 
     render() {
 
-        const namesList = this.state.rooms.map((room) => {
-            return <tr>
+        const namesList = this.state.rooms.map((room,i) => {
+            return <tr key={i}>
                 <td>name</td>
                 <td>{room}</td>
-                <td><button onClick={this.onClickEnterGame.bind(this,room)}>Entrez dans la room</button></td>
+                <td><button onClick={this.onClickEnterGame.bind(this,room)}>Enter the room</button></td>
             </tr>;
         });
 
@@ -75,7 +75,7 @@ class Room extends Component {
             <div className="container">
                 <div className="jumbotron mt-5">
                     <div className="col-sm-8 mx-auto">
-                        <h1 className="text-center">Les Rooms</h1>
+                        <h1 className="text-center">The Rooms</h1>
                     </div>
                     <table className="table col-md-6 mx-auto">
                         <tbody>
@@ -84,7 +84,7 @@ class Room extends Component {
                     </table>
                 </div>
                 <div>
-                    <button onClick={this.onClickCreateRoom}>Creer room </button>
+                    <button onClick={this.onClickCreateRoom}>Create room </button>
                 </div>
             </div>
         )
