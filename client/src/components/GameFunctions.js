@@ -31,3 +31,21 @@ export const getGamesByUserId = data => {
             return response.data;
         })
 }
+export const getGameLostById = data => {
+    return axios
+        .post('/games/getGameLostById', {
+            user_id: data.user_id,
+        })
+        .then(response => {
+            return response.data;
+        })
+}
+export const getGameWinById = data => {
+    return axios
+        .post('/games/getGameWinById', {
+            user_id: data.user_id,
+        })
+        .then(response => {
+            return response.data;
+        })
+}

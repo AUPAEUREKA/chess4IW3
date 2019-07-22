@@ -51,4 +51,53 @@ games.post('/updateGame', (req, res) => {
     }).catch();
 
 });
+
+games.post('/getGameWinById', (req, res) => {
+
+    const gameData = {
+        $and: [
+            {
+                $or: [
+                    {user_1_id: req.body.user_id},
+                    {user_2_id: req.body.user_id}
+                ]
+            },
+            {
+                finished: true
+            },
+            {
+                loser:{ $ne: req.body.user_id }
+            }
+        ]
+    };
+
+    Game.count(gameData).then((gamesRes) => {
+        res.json(gamesRes);
+    });
+
+});
+games.post('/getGameLostById', (req, res) => {
+
+    const gameData = {
+        $and: [
+            {
+                $or: [
+                    {user_1_id: req.body.user_id},
+                    {user_2_id: req.body.user_id}
+                ]
+            },
+            {
+                finished: true
+            },
+            {
+                loser:req.body.user_id
+            }
+        ]
+    };
+
+    Game.count(gameData).then((gamesRes) => {
+        res.json(gamesRes);
+    });
+
+});
 module.exports = games;
